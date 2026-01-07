@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống QLDA GPMB 2026 - TTPTQĐ Xuân Lộc</title>
+    
+    <!-- 1. CÁC THƯ VIỆN CỐT LÕI (CDN) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 2. CSS TÙY CHỈNH (PHONG CÁCH QUYỀN LỰC & CÔNG NGHỆ) -->
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Nền Công Nghệ Cao: Trắng Xanh Dương + Lưới Tọa Độ */
+        .tech-bg {
+            background-color: #f0f8ff; /* Alice Blue */
+            background-image: 
+                linear-gradient(rgba(79, 195, 247, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(79, 195, 247, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px; /* Ô lưới */
+            color: #1e293b;
+        }
+
+        /* Banner Đỏ Quyền Lực */
+        .header-power {
+            background: linear-gradient(180deg, #8B0000 0%, #600000 100%);
+            border-bottom: 4px solid #FFD700;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+            z-index: 40; /* Thấp hơn sidebar */
+        }
+
+        /* Chữ Vàng Tỏa Sáng */
+        .text-glow-gold {
+            color: #FFD700;
+            text-shadow: 0 0 5px #FFA500, 0 0 15px #FF8C00, 0 0 30px #FF4500;
+            font-family: 'Times New Roman', serif;
+            letter-spacing: 1px;
+        }
+
+        /* Sidebar Hệ Sinh Thái */
+        .ecosystem-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            width: 300px;
+            z-index: 100; /* Cao nhất */
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+            border-right: 1px solid #334155;
+        }
+        .ecosystem-sidebar.open {
+            transform: translateX(0);
+        }
+        .sidebar-toggle {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            background: #8B0000;
+            color: #FFD700;
+            padding: 10px 15px 10px 10px;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            z-index: 90;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            border: 1px solid #FFD700;
+            border-left: none;
+            transition: all 0.3s;
+        }
+        .sidebar-toggle:hover {
+            padding-left: 15px;
+            background: #a52a2a;
+        }
+
+        /* Link trong Sidebar */
+        .eco-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: #e2e8f0;
+            text-decoration: none;
+            border-bottom: 1px solid #334155;
+            transition: all 0.2s;
+        }
+        .eco-link:hover {
+            background: #1e293b;
+            color: #FFD700;
+            padding-left: 25px;
+        }
+        .eco-link i {
+            width: 25px;
+            text-align: center;
+            margin-right: 15px;
+            color: #ef4444; /* Đỏ điểm nhấn */
+        }
+
+        /* Hiệu ứng Sao rơi Banner */
+        .star-banner {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: fall-banner linear infinite;
+            pointer-events: none;
+        }
+        @keyframes fall-banner {
+            0% { transform: translateY(-10px) scale(0.5); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translateY(150px) scale(1); opacity: 0; }
+        }
+
+        /* Footer */
+        .footer-pro {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-top: 3px solid #b91c1c;
+            padding: 20px 0;
+            margin-top: auto;
+            text-align: center;
+        }
+
+        /* Table Header */
+        .gov-table-header {
+            background: #8B0000;
+            color: #FFD700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-bottom: 2px solid #FFD700;
+        }
+
+        /* Input Form */
+        .gov-input {
+            border: 1px solid #cbd5e1;
+            background-color: #fff;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+        .gov-input:focus {
+            border-color: #b91c1c;
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.15);
+            outline: none;
+        }
+    </style>
+</head>
+<body class="tech-bg">
+    <div id="root" class="flex flex-col min-h-screen"></div>
+
+    <!-- 3. MÃ NGUỒN REACT -->
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        // --- KHAI BÁO HỆ SINH THÁI (ECOSYSTEM LINKS) ---
+        const ECOSYSTEM_LINKS = [
+            { 
+                id: 1, 
+                name: "Tra cứu Cây trồng 4866", 
+                url: "https://ducanhbkcit.github.io/ducanh.bkcit.caytrong4866/", 
+                icon: "fa-tree" 
+            },
+            { 
+                id: 2, 
+                name: "Bản đồ Quy hoạch Xuân Lộc", 
+                url: "https://ducanhbkcit.github.io/XuanLoc/", 
+                icon: "fa-map-marked-alt" 
+            },
+            { 
+                id: 3, 
+                name: "Dữ liệu Quỹ đất Xuân Lộc", 
+                url: "https://ducanhbkcit.github.io/ducanh_Quydat_XuanLoc/", 
+                icon: "fa-database" 
+            },
+            { 
+                id: 4, 
+                name: "Trợ lý AI (NotebookLM)", 
+                url: "https://notebooklm.google.com/notebook/d0e41d74-8c01-4c30-b1aa-8d8824efd7df", 
+                icon: "fa-robot" 
+            },
+            { 
+                id: 5, 
+                name: "Kho Dữ liệu Dự án (Drive)", 
+                url: "https://drive.google.com/drive/folders/1_dDp7WqT-t2Ykbkyr9Xqh8qyPTFOHQBG?usp=drive_link", 
+                icon: "fa-folder-open" 
+            }
+        ];
+
+        // --- HẰNG SỐ ---
+        const STATUS_OPTIONS = [
+            'Chuẩn bị', 'Kiểm kê', 'Niêm yết', 'Phê duyệt PA', 'Chi trả', 'Bàn giao MB', 'Quyết toán'
+        ];
+        const ORG_COST_RATES = [2.0, 2.5, 3.5];
+
+        // --- HELPER FORMAT ---
+        const formatBillion = (value) => {
+            if (!value && value !== 0) return '0';
+            const billionVal = value / 1000000000;
+            return billionVal.toLocaleString('en-US', { 
+                minimumFractionDigits: 3, 
+                maximumFractionDigits: 3 
+            }) + ' Tỷ';
+        };
+
+        const formatCurrency = (value) => {
+            if (!value && value !== 0) return '0 ₫';
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+        };
+
+        const formatNumber = (value) => {
+            if (!value) return '0';
+            return new Intl.NumberFormat('vi-VN').format(value);
+        };
+
+        // --- COMPONENT: SIDEBAR HỆ SINH THÁI ---
+        const EcosystemSidebar = ({ isOpen, onClose }) => {
+            return (
+                <>
+                    {/* Backdrop mờ khi mở trên mobile */}
+                    {isOpen && (
+                        <div 
+                            className="fixed inset-0 bg-black/50 z-[95]" 
+                            onClick={onClose}
+                        ></div>
+                    )}
+                    <div className={`ecosystem-sidebar ${isOpen ? 'open' : ''}`}>
+                        <div className="p-5 border-b border-gray-700 bg-black/20">
+                            <h3 className="text-[#FFD700] font-bold uppercase text-sm tracking-wider flex items-center gap-2">
+                                <i className="fas fa-network-wired"></i> Hệ Sinh Thái
+                            </h3>
+                            <button 
+                                onClick={onClose}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                            >
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div className="py-2">
+                            {ECOSYSTEM_LINKS.map(link => (
+                                <a 
+                                    key={link.id} 
+                                    href={link.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="eco-link"
+                                >
+                                    <i className={`fas ${link.icon}`}></i>
+                                    <span className="font-medium text-sm">{link.name}</span>
+                                </a>
+                            ))}
+                        </div>
+                        <div className="absolute bottom-0 w-full p-4 text-center text-xs text-gray-500 border-t border-gray-800">
+                            <p>Phiên bản V7.0 - 2026</p>
+                            <p className="mt-1 text-red-500">TTPTQĐ Xuân Lộc</p>
+                        </div>
+                    </div>
+                </>
+            );
+        };
+
+        // --- COMPONENT: SAO RƠI TRONG BANNER ---
+        const BannerStars = () => {
+            const stars = useMemo(() => {
+                return Array.from({ length: 25 }).map((_, i) => ({
+                    id: i,
+                    left: Math.random() * 100 + '%',
+                    width: Math.random() * 2 + 1 + 'px',
+                    height: Math.random() * 2 + 1 + 'px',
+                    duration: Math.random() * 3 + 2 + 's',
+                    delay: Math.random() * 5 + 's'
+                }));
+            }, []);
+
+            return (
+                <div className="absolute inset-0 pointer-events-none z-0">
+                    {stars.map(s => (
+                        <div key={s.id} className="star-banner" style={{
+                            left: s.left, width: s.width, height: s.height,
+                            animationDuration: s.duration, animationDelay: s.delay
+                        }}/>
+                    ))}
+                </div>
+            );
+        };
+
+        // --- COMPONENT: BIỂU ĐỒ ---
+        const ChartComponent = ({ type, data, options }) => {
+            const canvasRef = useRef(null);
+            const chartInstanceRef = useRef(null);
+
+            useEffect(() => {
+                if (canvasRef.current) {
+                    if (chartInstanceRef.current) chartInstanceRef.current.destroy();
+                    chartInstanceRef.current = new Chart(canvasRef.current, {
+                        type: type,
+                        data: data,
+                        options: options
+                    });
+                }
+                return () => {
+                    if (chartInstanceRef.current) chartInstanceRef.current.destroy();
+                };
+            }, [data, type, options]);
+
+            return <canvas ref={canvasRef} />;
+        };
+
+        // --- COMPONENT: THẺ THỐNG KÊ ---
+        const StatCard = ({ title, value, subtext, icon, colorClass }) => (
+            <div className="bg-white p-5 rounded shadow-lg border-l-4 border-red-800 hover:shadow-2xl transition-all transform hover:-translate-y-1 group">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <p className="text-xs font-bold uppercase text-gray-500 mb-1 group-hover:text-red-700 transition">{title}</p>
+                        <h3 className="text-2xl font-bold text-red-900 font-serif tracking-tight">{value}</h3>
+                        {subtext && <p className="text-xs text-gray-500 mt-2 italic border-t pt-1 inline-block">{subtext}</p>}
+                    </div>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${colorClass} shadow-md`}>
+                        <i className={`fas ${icon} text-lg`}></i>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // --- APP CHÍNH ---
+        function GovProjectManagerApp() {
+            // STATE
+            const [data, setData] = useState(() => {
+                try {
+                    const saved = localStorage.getItem('gpmb_2026_db_v7');
+                    return saved ? JSON.parse(saved) : [];
+                } catch { return []; }
+            });
+
+            const [view, setView] = useState('dashboard');
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [editingId, setEditingId] = useState(null);
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State cho Sidebar
+
+            // FORM STATE
+            const [form, setForm] = useState({
+                stt: 0, name: '', decisionNo: '', area: 0, totalBudget: 0, disbursed: 0,
+                orgCostRate: 2.0, status: 'Chuẩn bị', progress: 0, manager: '', notes: ''
+            });
+
+            // PERSISTENCE
+            useEffect(() => {
+                localStorage.setItem('gpmb_2026_db_v7', JSON.stringify(data));
+            }, [data]);
+
+            // ANALYTICS
+            const stats = useMemo(() => {
+                const totalP = data.length;
+                const budget = data.reduce((sum, i) => sum + (Number(i.totalBudget)||0), 0);
+                const disburse = data.reduce((sum, i) => sum + (Number(i.disbursed)||0), 0);
+                const orgCost = data.reduce((sum, i) => sum + ((Number(i.totalBudget)||0) * (Number(i.orgCostRate)||2)/100), 0);
+                const rate = budget ? (disburse / budget * 100) : 0;
+                return { totalP, budget, disburse, orgCost, rate };
+            }, [data]);
+
+            // CHART DATA
+            const chartDataBar = useMemo(() => ({
+                labels: data.map(d => d.name.length > 15 ? d.name.substring(0,15)+'...' : d.name),
+                datasets: [
+                    { 
+                        label: 'Tổng vốn (Tỷ đồng)', 
+                        data: data.map(d => d.totalBudget / 1000000000), 
+                        backgroundColor: '#8B0000', 
+                        borderColor: '#FFFFFF',
+                        borderWidth: 1
+                    },
+                    { 
+                        label: 'Giải ngân (Tỷ đồng)', 
+                        data: data.map(d => d.disbursed / 1000000000), 
+                        backgroundColor: '#228B22',
+                        borderColor: '#FFFFFF',
+                        borderWidth: 1
+                    }
+                ]
+            }), [data]);
+
+            const chartDataPie = useMemo(() => {
+                const counts = {};
+                data.forEach(d => counts[d.status] = (counts[d.status] || 0) + 1);
+                return {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#d32f2f', '#1976d2', '#fbc02d', '#388e3c', '#7b1fa2', '#f57c00', '#455a64'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                };
+            }, [data]);
+
+            // HANDLERS
+            const handleAddNew = () => {
+                setForm({
+                    stt: data.length + 1, name: '', decisionNo: '', area: 0, totalBudget: 0, disbursed: 0,
+                    orgCostRate: 2.0, status: 'Chuẩn bị', progress: 0, manager: '', notes: ''
+                });
+                setEditingId(null);
+                setIsModalOpen(true);
+            };
+
+            const handleEdit = (item) => {
+                setForm({...item});
+                setEditingId(item.id);
+                setIsModalOpen(true);
+            };
+
+            const handleDelete = (id, name) => {
+                if(confirm(`XÁC NHẬN:\nBạn có chắc chắn muốn xóa dự án:\n"${name}"\n\nDữ liệu không thể phục hồi!`)) {
+                    const newData = data.filter(d => d.id !== id).map((d, idx) => ({...d, stt: idx + 1}));
+                    setData(newData);
+                }
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if(!form.name || !form.decisionNo) { alert("Vui lòng nhập Tên dự án và Số Quyết định!"); return; }
+                
+                if(editingId) {
+                    setData(data.map(d => d.id === editingId ? {...form, id: editingId} : d));
+                } else {
+                    setData([...data, { ...form, id: Date.now().toString(), stt: data.length + 1 }]);
+                }
+                setIsModalOpen(false);
+            };
+
+            const filteredData = data.filter(d => 
+                d.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                d.decisionNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                d.manager.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            return (
+                <>
+                    {/* SIDEBAR & TOGGLE BUTTON */}
+                    <EcosystemSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                    
+                    {!isSidebarOpen && (
+                        <div 
+                            className="sidebar-toggle" 
+                            onClick={() => setIsSidebarOpen(true)}
+                            title="Mở Hệ Sinh Thái"
+                        >
+                            <i className="fas fa-chevron-right text-lg"></i>
+                        </div>
+                    )}
+
+                    {/* HEADER */}
+                    <header className="header-power sticky top-0">
+                        <BannerStars />
+                        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row justify-between items-center gap-4 relative z-10">
+                            <div className="flex items-center gap-5 ml-8 md:ml-0"> {/* Margin left để tránh nút sidebar trên mobile */}
+                                <div className="bg-[#FFD700] w-16 h-16 rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
+                                    <i className="fas fa-star text-[#8B0000] text-3xl"></i>
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl md:text-3xl font-bold uppercase text-glow-gold mb-1 leading-tight">
+                                        HỆ THỐNG QUẢN LÝ DỰ ÁN GPMB 2026
+                                    </h1>
+                                    <p className="text-sm md:text-base text-white uppercase font-bold tracking-widest opacity-90 font-serif border-b inline-block border-white/30 pb-1">
+                                        TRUNG TÂM PHÁT TRIỂN QUỸ ĐẤT - CHI NHÁNH XUÂN LỘC
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex gap-3">
+                                <button onClick={() => setView('dashboard')} 
+                                    className={`px-5 py-2.5 rounded font-bold uppercase text-sm shadow-lg transition-all flex items-center gap-2 border
+                                    ${view === 'dashboard' ? 'bg-[#FFD700] text-[#800000] border-white scale-105' : 'bg-black/30 text-[#FFD700] border-[#FFD700] hover:bg-black/50'}`}>
+                                    <i className="fas fa-chart-line"></i> Quản lý chung
+                                </button>
+                                <button onClick={() => setView('table')} 
+                                    className={`px-5 py-2.5 rounded font-bold uppercase text-sm shadow-lg transition-all flex items-center gap-2 border
+                                    ${view === 'table' ? 'bg-[#FFD700] text-[#800000] border-white scale-105' : 'bg-black/30 text-[#FFD700] border-[#FFD700] hover:bg-black/50'}`}>
+                                    <i className="fas fa-database"></i> Dữ liệu chi tiết
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* MAIN */}
+                    <main className="flex-grow p-6 max-w-[1600px] mx-auto w-full relative z-0">
+                        
+                        {view === 'dashboard' && (
+                            <div className="space-y-8 animate-[fadeIn_0.5s]">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    <StatCard title="Tổng số Dự án" value={stats.totalP} subtext="Kế hoạch năm 2026" icon="fa-folder-open" colorClass="bg-red-700" />
+                                    <StatCard title="Tổng vốn Đầu tư" value={formatBillion(stats.budget)} subtext="Vốn được duyệt (Tỷ đồng)" icon="fa-coins" colorClass="bg-blue-700" />
+                                    <StatCard title="Đã Giải ngân" value={formatBillion(stats.disburse)} subtext={`Đạt: ${stats.rate.toFixed(1)}% (Tỷ đồng)`} icon="fa-check-double" colorClass="bg-green-700" />
+                                    <StatCard title="KP Tổ chức (Thu)" value={formatBillion(stats.orgCost)} subtext="Trích 2% - 3.5% (Tỷ đồng)" icon="fa-hand-holding-usd" colorClass="bg-yellow-600" />
+                                </div>
+
+                                {data.length > 0 ? (
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                        <div className="bg-white p-6 rounded-lg shadow-lg lg:col-span-2 border-t-4 border-[#8B0000]">
+                                            <h3 className="text-[#8B0000] font-bold uppercase border-b border-gray-200 pb-3 mb-4 text-sm tracking-wide">
+                                                <i className="fas fa-chart-bar mr-2"></i> Biểu đồ Tiến độ Giải ngân (Đơn vị: Tỷ đồng)
+                                            </h3>
+                                            <div className="h-96">
+                                                <ChartComponent type="bar" data={chartDataBar} options={{ 
+                                                    maintainAspectRatio: false, 
+                                                    responsive: true,
+                                                    scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return value + ' Tỷ'; } } } },
+                                                    plugins: { tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} Tỷ` } } }
+                                                }} />
+                                            </div>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-lg shadow-lg border-t-4 border-[#FFD700]">
+                                            <h3 className="text-[#8B0000] font-bold uppercase border-b border-gray-200 pb-3 mb-4 text-sm tracking-wide">
+                                                <i className="fas fa-chart-pie mr-2"></i> Trạng thái Thực hiện
+                                            </h3>
+                                            <div className="h-96 flex items-center justify-center">
+                                                <ChartComponent type="pie" data={chartDataPie} options={{ maintainAspectRatio: false, responsive: true }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-white p-16 text-center rounded-lg border-2 border-dashed border-red-200 shadow-sm">
+                                        <i className="fas fa-layer-group text-5xl text-gray-300 mb-4"></i>
+                                        <h3 className="text-xl font-bold text-gray-500 uppercase">Hệ thống dữ liệu trống</h3>
+                                        <p className="text-gray-400 mb-6">Chưa có dự án nào được cập nhật cho năm 2026.</p>
+                                        <button onClick={() => setView('table')} className="btn-gov px-6 py-2 rounded font-bold uppercase shadow-lg">
+                                            <i className="fas fa-plus-circle mr-2"></i> Bắt đầu nhập liệu
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {view === 'table' && (
+                            <div className="bg-white rounded shadow-2xl border border-gray-200 flex flex-col h-[75vh] animate-[fadeIn_0.3s]">
+                                <div className="p-4 border-b bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                                    <div className="relative w-full md:w-1/3">
+                                        <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                        <input type="text" placeholder="Tìm kiếm tên dự án, số QĐ..." className="w-full pl-10 pr-4 py-2 rounded gov-input"
+                                            value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                                    </div>
+                                    <button onClick={handleAddNew} className="btn-gov px-6 py-2 rounded font-bold uppercase text-sm flex items-center gap-2">
+                                        <i className="fas fa-plus"></i> Thêm Dự Án Mới
+                                    </button>
+                                </div>
+                                <div className="flex-1 overflow-auto bg-white">
+                                    <table className="w-full text-sm border-collapse">
+                                        <thead className="gov-table-header sticky top-0 z-20 shadow-md">
+                                            <tr>
+                                                <th className="p-3 text-center border-r border-red-800">STT</th>
+                                                <th className="p-3 text-left border-r border-red-800 min-w-[250px]">Dự án / Pháp lý</th>
+                                                <th className="p-3 text-right border-r border-red-800">Diện tích (m2)</th>
+                                                <th className="p-3 text-right border-r border-red-800 min-w-[120px]">Tổng vốn</th>
+                                                <th className="p-3 text-center border-r border-red-800">Tỷ lệ</th>
+                                                <th className="p-3 text-right border-r border-red-800">KP Tổ chức</th>
+                                                <th className="p-3 text-right border-r border-red-800">Giải ngân</th>
+                                                <th className="p-3 text-left border-r border-red-800 min-w-[150px]">Tiến độ / Phụ trách</th>
+                                                <th className="p-3 text-center">Tác vụ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredData.length === 0 ? (
+                                                <tr><td colSpan="9" className="p-12 text-center text-gray-500 italic">Không có dữ liệu phù hợp.</td></tr>
+                                            ) : filteredData.map((d) => (
+                                                <tr key={d.id} className="border-b border-gray-100 hover:bg-yellow-50 transition group">
+                                                    <td className="p-3 text-center font-bold text-[#8B0000]">{d.stt}</td>
+                                                    <td className="p-3">
+                                                        <div className="font-bold text-[#8B0000] mb-1 text-base">{d.name}</div>
+                                                        <div className="text-xs text-blue-700 bg-blue-50 inline-block px-2 py-0.5 rounded border border-blue-200 font-mono">
+                                                            <i className="fas fa-file-signature mr-1"></i> {d.decisionNo}
+                                                        </div>
+                                                        {d.notes && <div className="text-xs text-gray-500 italic mt-1 border-l-2 border-gray-300 pl-2">{d.notes}</div>}
+                                                    </td>
+                                                    <td className="p-3 text-right font-mono">{formatNumber(d.area)}</td>
+                                                    <td className="p-3 text-right font-bold text-gray-700">{formatCurrency(d.totalBudget)}</td>
+                                                    <td className="p-3 text-center"><span className="bg-yellow-100 text-[#8B0000] px-2 py-1 rounded text-xs font-bold border border-yellow-300 shadow-sm">{d.orgCostRate}%</span></td>
+                                                    <td className="p-3 text-right font-bold text-[#8B0000] bg-red-50/50">{formatCurrency((Number(d.totalBudget)*Number(d.orgCostRate)/100))}</td>
+                                                    <td className="p-3 text-right font-bold text-green-700">{formatCurrency(d.disbursed)}</td>
+                                                    <td className="p-3">
+                                                        <div className="flex justify-between text-xs mb-1 font-semibold text-gray-600">
+                                                            <span>{d.status}</span>
+                                                            <span className="text-red-600">{d.progress}%</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 h-2 rounded-full mb-1 border border-gray-300">
+                                                            <div className="bg-[#8B0000] h-2 rounded-full" style={{width: `${d.progress}%`}}></div>
+                                                        </div>
+                                                        <div className="text-xs text-gray-600 font-medium"><i className="fas fa-user-tie mr-1"></i> {d.manager || '---'}</div>
+                                                    </td>
+                                                    <td className="p-3 text-center">
+                                                        <button onClick={() => handleEdit(d)} className="text-blue-600 hover:text-blue-800 mx-1 p-2 hover:bg-blue-50 rounded" title="Sửa"><i className="fas fa-edit"></i></button>
+                                                        <button onClick={() => handleDelete(d.id, d.name)} className="text-red-600 hover:text-red-800 mx-1 p-2 hover:bg-red-50 rounded" title="Xóa"><i className="fas fa-trash-alt"></i></button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* MODAL */}
+                    {isModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-[fadeIn_0.2s]">
+                            <div className="bg-white w-full max-w-4xl rounded shadow-2xl border-t-8 border-[#8B0000] flex flex-col max-h-[90vh]">
+                                <div className="p-4 bg-gray-50 border-b flex justify-between items-center">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-[#8B0000] text-white p-2 rounded shadow"><i className="fas fa-pen-nib"></i></div>
+                                        <h3 className="text-xl font-bold text-[#8B0000] uppercase font-serif">
+                                            {editingId ? 'Điều chỉnh Thông tin Dự án' : 'Thiết lập Hồ sơ Mới'}
+                                        </h3>
+                                    </div>
+                                    <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-red-600 transition"><i className="fas fa-times text-2xl"></i></button>
+                                </div>
+                                <div className="p-6 overflow-y-auto bg-[#f8fafc]">
+                                    <form onSubmit={handleSubmit} className="space-y-6">
+                                        <div className="bg-white p-5 rounded border border-gray-200 shadow-sm">
+                                            <h4 className="text-sm font-bold text-[#8B0000] uppercase border-b-2 border-[#8B0000]/20 pb-2 mb-4 flex items-center gap-2">
+                                                <i className="fas fa-info-circle"></i> I. Thông tin Pháp lý
+                                            </h4>
+                                            <div className="grid md:grid-cols-2 gap-5">
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-sm font-bold mb-1 text-gray-700">Tên dự án <span className="text-red-600">*</span></label>
+                                                    <input required type="text" className="w-full p-2.5 rounded gov-input font-bold text-[#8B0000]" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} placeholder="Nhập tên dự án đầy đủ..." />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1 text-gray-700">Số Quyết định <span className="text-red-600">*</span></label>
+                                                    <input required type="text" className="w-full p-2.5 rounded gov-input" value={form.decisionNo} onChange={e=>setForm({...form, decisionNo: e.target.value})} placeholder="VD: 1118/QĐ-UBND" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1 text-gray-700">Cán bộ phụ trách</label>
+                                                    <input type="text" className="w-full p-2.5 rounded gov-input" value={form.manager} onChange={e=>setForm({...form, manager: e.target.value})} placeholder="Nhập tên cán bộ..." />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-[#FFF8DC]/40 p-5 rounded border border-[#DAA520]/40 shadow-sm">
+                                            <h4 className="text-sm font-bold text-[#B8860B] uppercase border-b-2 border-[#DAA520]/30 pb-2 mb-4 flex items-center gap-2">
+                                                <i className="fas fa-calculator"></i> II. Tài chính & Quy mô
+                                            </h4>
+                                            <div className="grid md:grid-cols-3 gap-5">
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1 text-gray-700">Diện tích thu hồi (m2)</label>
+                                                    <input type="number" className="w-full p-2.5 rounded gov-input font-mono" value={form.area} onChange={e=>setForm({...form, area: Number(e.target.value)})} />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1 text-gray-700">Tổng vốn (VNĐ)</label>
+                                                    <input type="number" className="w-full p-2.5 rounded gov-input font-bold text-[#8B0000]" value={form.totalBudget} onChange={e=>setForm({...form, totalBudget: Number(e.target.value)})} />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1 text-gray-700">Đã giải ngân (VNĐ)</label>
+                                                    <input type="number" className="w-full p-2.5 rounded gov-input font-bold text-green-700" value={form.disbursed} onChange={e=>setForm({...form, disbursed: Number(e.target.value)})} />
+                                                </div>
+                                                <div className="md:col-span-3 bg-white p-3 rounded border border-[#DAA520]/30 flex items-center gap-4">
+                                                    <label className="text-sm font-bold text-[#8B0000] whitespace-nowrap">Tỷ lệ Trích KP Tổ chức:</label>
+                                                    <div className="flex gap-4">
+                                                        {ORG_COST_RATES.map(rate => (
+                                                            <label key={rate} className="flex items-center gap-2 cursor-pointer hover:text-[#8B0000]">
+                                                                <input type="radio" name="orgRate" checked={Number(form.orgCostRate) === rate} onChange={()=>setForm({...form, orgCostRate: rate})} className="accent-[#8B0000] w-4 h-4"/>
+                                                                <span className="font-bold text-sm">{rate}%</span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white p-5 rounded border border-gray-200 shadow-sm">
+                                            <h4 className="text-sm font-bold text-[#8B0000] uppercase border-b-2 border-[#8B0000]/20 pb-2 mb-4 flex items-center gap-2">
+                                                <i className="fas fa-tasks"></i> III. Tiến độ & Ghi chú
+                                            </h4>
+                                            <div className="grid md:grid-cols-2 gap-5">
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1 text-gray-700">Trạng thái hiện tại</label>
+                                                    <select className="w-full p-2.5 rounded gov-input" value={form.status} onChange={e=>setForm({...form, status: e.target.value})}>
+                                                        {STATUS_OPTIONS.map(s=><option key={s} value={s}>{s}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-bold mb-1 text-gray-700">Tiến độ tổng thể (%)</label>
+                                                    <div className="flex items-center gap-3">
+                                                        <input type="range" className="flex-1 accent-[#8B0000]" value={form.progress} onChange={e=>setForm({...form, progress: Number(e.target.value)})} />
+                                                        <span className="font-bold bg-[#8B0000] text-white px-2 py-1 rounded text-xs">{form.progress}%</span>
+                                                    </div>
+                                                </div>
+                                                <div className="md:col-span-2">
+                                                    <label className="block text-sm font-bold mb-1 text-gray-700">Ghi chú / Vướng mắc</label>
+                                                    <textarea rows="2" className="w-full p-2.5 rounded gov-input" value={form.notes} onChange={e=>setForm({...form, notes: e.target.value})} placeholder="Nội dung ghi chú..."></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                                            <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 rounded bg-white border border-gray-300 hover:bg-gray-100 font-bold text-sm uppercase text-gray-600 shadow-sm transition">Hủy bỏ</button>
+                                            <button type="submit" className="px-8 py-2.5 rounded bg-gradient-to-b from-[#b91c1c] to-[#991b1b] hover:from-[#ef4444] hover:to-[#b91c1c] font-bold text-sm uppercase text-white shadow-lg flex items-center gap-2 transition transform hover:-translate-y-0.5">
+                                                <i className="fas fa-save"></i> Lưu Dữ Liệu
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FOOTER */}
+                    <footer className="footer-pro">
+                        <div className="max-w-7xl mx-auto px-4">
+                            <h2 className="font-bold text-lg uppercase text-[#FFD700] mb-2 font-serif tracking-widest">
+                                TRUNG TÂM PHÁT TRIỂN QUỸ ĐẤT - CHI NHÁNH XUÂN LỘC
+                            </h2>
+                            <p className="text-gray-400 mb-3 text-sm">
+                                <i className="fas fa-map-marker-alt mr-2 text-red-500"></i>01 Phan Bội Châu, xã Xuân Lộc, tỉnh Đồng Nai
+                            </p>
+                            <div className="inline-block border-t border-gray-600 pt-2 px-6">
+                                <p className="text-sm italic text-gray-500 font-medium">
+                                    "_Đồng hành cùng sự phát triển của địa phương"
+                                </p>
+                            </div>
+                        </div>
+                    </footer>
+                </>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<GovProjectManagerApp />);
+    </script>
+</body>
+</html>
